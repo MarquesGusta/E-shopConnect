@@ -37,4 +37,32 @@ SELECT
     startTime AS ini,
     endTime AS final
 FROM
-	servicepoint
+	servicepoint AS s
+WHERE
+	s.city = (SELECT city FROM users WHERE userid = 5);
+    
+-- ex2.g
+SELECT
+	SUM(quantity) AS quantidade
+FROM
+	Save_to_Shopping_Cart
+JOIN
+	Product
+ON
+	fk_pid = pk_pid
+JOIN
+	store
+ON
+	fk_sid = pk_sid
+WHERE(pk_sid = 8);
+
+-- ex2.h
+SELECT
+	content AS comentario
+FROM
+	Comments
+JOIN
+	Product
+ON
+	fk_pid = pk_pid
+WHERE(pk_pid = 123456789);
