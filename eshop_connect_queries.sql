@@ -343,7 +343,7 @@ GROUP BY
 HAVING
 	qtd >= 3;
 
--- 24.Encontre o total de pedidos pagos com cartão de crédito versus cartão de débito
+-- 24.Encontre o total de pedidos pagos com cartão de crédito versus cartão de débito // falta o total, apenas consegui quantos pedidos cada pessoa fez
 SELECT
 	count(c.fk_cardNumber) AS credito,
     count(d.fk_cardNumber) AS debito
@@ -361,8 +361,107 @@ GROUP BY
 	c.fk_cardNumber, d.fk_cardNumber;
 
 -- 25.Liste as marcas (brandName) que não têm produtos na loja com ID 1
+SELECT DISTINCT
+	*
+FROM
+	Brand AS b
+JOIN
+	Product AS p
+ON
+	b.pk_brandName = p.fk_brandName
+JOIN
+	store AS s
+ON
+	p.fk_sid = s.pk_sid
+WHERE
+	p.fk_sid NOT IN(SELECT pk_sid FROM store WHERE pk_sid = 1);
+
 -- 26.Calcule a quantidade média de produtos disponíveis em todas as lojas
+SELECT
+	s.name AS loja,
+    avg(p.amount) AS media_quantidade
+FROM
+	store AS s
+JOIN
+	Product AS p
+ON
+	s.pk_sid = p.fk_sid
+GROUP BY
+	s.name;
+
 -- 27.Encontre os nomes das lojas que não têm produtos em estoque (amount = 0)
+SELECT
+	s.name AS loja,
+    p.amount AS qtd
+FROM
+	store AS s
+JOIN
+	Product AS p
+ON
+	s.pk_sid = p.fk_sid
+WHERE
+	p.amount = 0;
+
 -- 28.Liste os nomes dos vendedores que gerenciam uma loja localizada em "São Paulo"
--- 29.Encontre  o  número  total  de  produtos  de  uma  marca  específica  (por exemplo, "Sony") disponíveis em todas as lojas
--- 30.Calcule  o  valor  total  de  todas  as  compras  feitas  por  um  comprador específico (por exemplo, userid = 1).
+SELECT
+	*
+FROM
+	users AS u
+JOIN
+	manage AS m
+ON
+	u.userid = m.fk_userid
+JOIN
+	store AS s
+ON
+	m.fk_sid = s.pk_sid
+WHERE
+	s.city = "São Paulo";
+
+-- 29.Encontre  o  número  total  de  produtos  de  uma  marca  específica  (por exemplo, "Sony")
+-- disponíveis em todas as lojas
+SELECT
+	s.name AS loja,
+	SUM(p.amount) AS qtd,
+    b.pk_brandName AS marca
+FROM
+	store AS s
+JOIN
+	Product AS p
+ON
+	s.pk_sid = p.fk_sid
+JOIN
+	Brand AS b
+ON
+	p.fk_brandName = b.pk_brandName
+GROUP BY
+	s.name, b.pk_brandName
+HAVING
+	marca = "Microsoft";
+
+-- 30.Calcule  o  valor  total  de  todas  as  compras  feitas  por  um  comprador específico
+-- (por exemplo, userid = 1).
+SELECT
+	u.userid AS id,
+    u.name AS nome,
+    SUM(o.totalAmount) AS total
+FROM
+	buyer AS b
+JOIN
+	users AS u
+ON
+	b.fk_userid = u.userid
+JOIN
+	creditcard AS c
+ON
+	u.userid = c.fk_userid
+left join
+	Payment AS p
+ON
+	c.fk_cardNumber = p.fk_cardNumber
+left JOIN
+	Orders AS o
+ON
+	p.fk_orderNumber = o.pk_orderNumber
+GROUP BY
+	u.userid, u.name
