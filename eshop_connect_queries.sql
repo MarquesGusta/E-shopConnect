@@ -282,17 +282,19 @@ GROUP BY
 -- 20.Liste  os  nomes  e  números  de  telefone  dos  usuários  que  não  fizeram pedidos
 SELECT DISTINCT
 	u.name,
-    u.userid
+    u.phoneNumber
 FROM
 	users AS u
 JOIN
 	creditcard AS c
 ON
 	u.userid = c.fk_userid
-RIGHT JOIN
+LEFT JOIN
 	Payment AS p
 ON
-	c.fk_cardNumber = p.fk_cardNumber;
+	c.fk_cardNumber = p.fk_cardNumber
+WHERE
+	c.fk_cardNumber NOT IN(SELECT fk_cardNumber FROM Payment);
 
 -- 21.Liste os nomes dos produtos que foram revisados por compradores com uma classificação superior a 4
 SELECT distinct
@@ -315,13 +317,49 @@ JOIN
 	seller AS s
 ON
 	u.userid = s.fk_userid
-RIGHT JOIN
+LEFT JOIN
 	manage AS m
 ON
-	s.fk_userid = m.fk_userid;
+	s.fk_userid = m.fk_userid
+WHERE
+	s.fk_userid NOT IN (SELECT fk_userid FROM manage);
 
 -- 23.Liste os nomes dos compradores que fizeram pelo menos 3 pedidos.
+SELECT
+	u.name,
+	COUNT(u.name) AS qtd
+FROM
+	users AS u
+JOIN
+	creditcard AS c
+ON
+	u.userid = c.fk_userid
+right JOIN
+	Payment AS p
+ON
+	c.fk_cardNumber = p.fk_cardNumber
+GROUP BY
+	u.name
+HAVING
+	qtd >= 3;
+
 -- 24.Encontre o total de pedidos pagos com cartão de crédito versus cartão de débito
+SELECT
+	count(c.fk_cardNumber) AS credito,
+    count(d.fk_cardNumber) AS debito
+FROM
+	Payment AS p
+right JOIN
+	creditcard AS c
+ON
+	p.fk_cardNumber = c.fk_cardNumber
+left JOIN
+	debitcard AS d
+ON
+	p.fk_cardNumber = d.fk_cardNumber
+GROUP BY
+	c.fk_cardNumber, d.fk_cardNumber;
+
 -- 25.Liste as marcas (brandName) que não têm produtos na loja com ID 1
 -- 26.Calcule a quantidade média de produtos disponíveis em todas as lojas
 -- 27.Encontre os nomes das lojas que não têm produtos em estoque (amount = 0)
